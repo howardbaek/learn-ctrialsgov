@@ -1,0 +1,85 @@
+---
+title: "Exploration of ctrialsgov: Access, Visualization, and Discovery of the ClinicalTrials.gov Database"
+author: "Howard Baek"
+date: "12/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+
+```{r}
+library(ctrialsgov)
+```
+
+`clinicaltrials.gov` website provides a database of clinical studies from around the world. Maintained by the U.S National Library of Medicine and the NIH.
+
+## Create the data
+```{r}
+# Load a pre-processed version of database into R
+ctgov_load_sample() # Loads 2% of the database
+
+# Download a static version of data and load into R
+ctgov_load_cache()
+
+# If installed a copy of database locally into PostgreSQL, data can be created from scratch
+library(DBI)
+library(RPostgreSQL)
+
+drv <- dbDriver("PostgreSQL")
+con <- DBI::dbConnect(drv, dbname = "aact")
+ctgov_create_data(con)
+```
+
+Regardless of which way you create the data, the querying functions will work.
+
+## Query the data
+```{r}
+# Primary function for querying dataset: ctgov_query()
+ctgov_query(study_type = "Interventional")
+
+# Another way to query: continuous values
+ctgov_query(enrollment_range = c(40, 42))
+ctgov_query(enrollment_range = c(1000, NA))
+
+# Third way: Using keywords(kw)
+ctgov_query(description_kw = "lung cancer")
+
+
+# Above options can be combined as needed with pipes:
+library(dplyr)
+
+ctgov_query() %>% 
+  ctgov_query(description_kw = "cancer") %>% 
+  ctgov_query(enrollment_range = c(100, 200)) %>% 
+  ctgov_query(date_range = c("2019-01-01", "2020-02-01"))
+```
+
+
+
+## Text Analysis
+
+```{r}
+# ctgov_kwic() highlights all occurences of a term within context
+z <- ctgov_query(study_type = "Interventional")
+ctgov_kwic("bladder", z$brief_title, z$nct_id)
+
+# TF-IDF
+z <- ctgov_query()
+tfidf <- ctgov_tfidf(z$description)
+print(tfidf, n = 15)
+
+# Document similarity
+z <- ctgov_query(
+  study_type = "Interventional", sponsor_type = "Industry", phase = "Phase 2"
+)
+scores <- ctgov_text_similarity(z$description, min_df = 0, max_df = 0.1)
+dim(scores)
+
+index <- order(scores[, 100], decreasing = TRUE)[seq_len(15)]
+z$brief_title[index]
+```
+
+
+
