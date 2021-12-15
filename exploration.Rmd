@@ -11,25 +11,15 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 
 ```{r}
 library(ctrialsgov)
+library(tidyverse)
 ```
 
 `clinicaltrials.gov` website provides a database of clinical studies from around the world. Maintained by the U.S National Library of Medicine and the NIH.
 
 ## Create the data
 ```{r}
-# Load a pre-processed version of database into R
-ctgov_load_sample() # Loads 2% of the database
-
 # Download a static version of data and load into R
 ctgov_load_cache()
-
-# If installed a copy of database locally into PostgreSQL, data can be created from scratch
-library(DBI)
-library(RPostgreSQL)
-
-drv <- dbDriver("PostgreSQL")
-con <- DBI::dbConnect(drv, dbname = "aact")
-ctgov_create_data(con)
 ```
 
 Regardless of which way you create the data, the querying functions will work.
@@ -45,10 +35,6 @@ ctgov_query(enrollment_range = c(1000, NA))
 
 # Third way: Using keywords(kw)
 ctgov_query(description_kw = "lung cancer")
-
-
-# Above options can be combined as needed with pipes:
-library(dplyr)
 
 ctgov_query() %>% 
   ctgov_query(description_kw = "cancer") %>% 
@@ -82,4 +68,17 @@ z$brief_title[index]
 ```
 
 
+## Specific Analysis
 
+```{r}
+# Search for Pembrolizumab
+pem <- ctgov_query(description_kw = "Pembrolizumab")
+
+# Search for Nivolumab
+niv <- ctgov_query(description_kw = "Nivolumab")
+
+pem$outcomes[[1]]
+niv$outcomes[[3]]
+```
+
+`outcomes` column is a list-column containing tibble with information on outcome type, outcome measure, time frame, and description. Measures include Objective response rate (ORR), Progression-free survival (PFS), and Overall survival (OS).
