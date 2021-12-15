@@ -1,4 +1,4 @@
-### Exploration of ctrialsgov: Access, Visualization, and Discovery of the ClinicalTrials.gov Database
+## Exploration of ctrialsgov: Access, Visualization, and Discovery of the ClinicalTrials.gov Database
 
 Documenting my exploration of the functions in the [ctrialsgov](https://cran.r-project.org/web/packages/ctrialsgov/index.html) package. 
 
