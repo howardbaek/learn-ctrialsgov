@@ -18,7 +18,7 @@ library(tidyverse)
 
 ## Create the data
 ```{r}
-# Download a static version of data and load into R
+# Download a static version of data and load into R (takes a few minutes)
 ctgov_load_cache()
 ```
 
@@ -77,8 +77,11 @@ pem <- ctgov_query(description_kw = "Pembrolizumab")
 # Search for Nivolumab
 niv <- ctgov_query(description_kw = "Nivolumab")
 
-pem$outcomes[[1]]
-niv$outcomes[[3]]
+
+# Combine a list of data frames into one data frame by row
+# When .id is supplied, a new column of identifiers is created to link each row to its original data frame.
+bind_rows(pem$outcomes, .id = "label")
+bind_rows(niv$outcomes, .id = "column_label") 
 ```
 
 `outcomes` column is a list-column containing tibble with information on outcome type, outcome measure, time frame, and description. Measures include Objective response rate (ORR), Progression-free survival (PFS), and Overall survival (OS).
